@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: medical-system-server
+
+server:
+  port: 8761
+eureka:
+  client:
+    service-url:
+      default: http://localhost:8761/eureka/
+    fetch-registry: false
+    register-with-eureka: false

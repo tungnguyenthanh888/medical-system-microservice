@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: patient-service-routes
+              uri:
+                lb:\\patient-service
+              predicates:
+                - Path=\api\v1\patients\**
+
+            - id: doctor-service-routes
+              uri:
+                lb:\\doctor-service
+              predicates:
+                - Path=\api\v1\doctors\**
+
+            - id: appointment-service-routes
+              uri:
+                lb:\\appointment-service
+              predicates:
+                - Path=\api\v1\appointments\**
+server:
+  port: 8080

@@ -3,6 +3,8 @@ package com.medical.appointmentservice.service.Imp;
 import com.medical.appointmentservice.dto.request.CreateAppointmentDTO;
 import com.medical.appointmentservice.dto.response.AppointmentResponseDTO;
 import com.medical.appointmentservice.entity.Appointment;
+import com.medical.appointmentservice.exception.ResourceNotFoundException;
+import com.medical.appointmentservice.exception.ServiceUnavailableException;
 import com.medical.appointmentservice.mapper.AppointmentMapper;
 import com.medical.appointmentservice.repository.AppointmentRepository;
 import com.medical.appointmentservice.service.AppointmentService;
@@ -30,14 +32,14 @@ public class AppointmentServiceImp implements AppointmentService {
 
     @Override
     public AppointmentResponseDTO createAppointment(CreateAppointmentDTO payload) {
-        if(!checkExisted(PATIENT_SERVICE_URL+payload.getPatientId()))
+        if(!checkExisted(PATIENT_SERVICE_URL+payload.getPatientId(), "Benh nhan"))
         {
-            throw new RuntimeException("Benh nhan khong ton tai");
+            throw new ResourceNotFoundException("Benh nhan khong ton tai");
         }
 
-        if(!checkExisted(DOCTOR_SERVICE_URL+payload.getDoctorId()))
+        if(!checkExisted(DOCTOR_SERVICE_URL+payload.getDoctorId(), "Bac si"))
         {
-            throw new RuntimeException("Bac si khong ton tai");
+            throw new ResourceNotFoundException("Bac si khong ton tai");
         }
 
         Appointment appointment = mapper.toEntity(payload);
@@ -45,7 +47,7 @@ public class AppointmentServiceImp implements AppointmentService {
         return mapper.toResponse(repository.save(appointment));
     }
 
-    private boolean checkExisted(String url)
+    private boolean checkExisted(String url, String serviceName)
     {
         try{
             ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
@@ -55,7 +57,7 @@ public class AppointmentServiceImp implements AppointmentService {
             return false;
         }
         catch (Exception e) {
-            throw new RuntimeException("Loi ket noi voi cac dich vu he thong."+e.getMessage());
+            throw new ServiceUnavailableException("He thong "+serviceName+" hien khong ka dung. Vui long thu lai sau.");
         }
     }
 }

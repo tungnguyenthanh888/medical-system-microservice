@@ -44,3 +44,8 @@ resilience4j:
         limitForPeriod = 5
         limitRefreshPeriod = 10000ms
         timeoutDuration = 0
+  timeLimiter:
+    instances:
+      insuranceTimeout:
+        timeoutDuration: 1s
+        cancelRunningFuture: true

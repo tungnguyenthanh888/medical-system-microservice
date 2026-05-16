@@ -8,6 +8,7 @@ import com.medical.appointmentservice.exception.ServiceUnavailableException;
 import com.medical.appointmentservice.mapper.AppointmentMapper;
 import com.medical.appointmentservice.repository.AppointmentRepository;
 import com.medical.appointmentservice.service.AppointmentService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,7 @@ public class AppointmentServiceImp implements AppointmentService {
         return mapper.toResponse(repository.save(appointment));
     }
 
+    @CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "fallbackCheckDoctor")
     private boolean checkExisted(String url, String serviceName)
     {
         try{
@@ -59,5 +61,10 @@ public class AppointmentServiceImp implements AppointmentService {
         catch (Exception e) {
             throw new ServiceUnavailableException("He thong "+serviceName+" hien khong ka dung. Vui long thu lai sau.");
         }
+    }
+
+    private boolean fallbackCheckDoctor()
+    {
+        return false;
     }
 }

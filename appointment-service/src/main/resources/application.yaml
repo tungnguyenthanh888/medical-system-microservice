@@ -17,3 +17,18 @@ eureka:
       default: http://localhost:8761:eureka/
     fetch-registry: true
     register-with-eureka: true
+
+logging:
+  level:
+    io:
+      github:
+        resilience4j=DEBUG
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      doctorServiceCB:
+        failureRateThreshold = 50
+        minimumNumberOfCalls = 5
+        waitDurationInOpenState = 10s
+        permittedNumberOfCallsInHalfOpenState = 3

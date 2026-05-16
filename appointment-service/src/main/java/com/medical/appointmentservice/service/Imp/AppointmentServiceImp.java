@@ -9,6 +9,7 @@ import com.medical.appointmentservice.mapper.AppointmentMapper;
 import com.medical.appointmentservice.repository.AppointmentRepository;
 import com.medical.appointmentservice.service.AppointmentService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +34,12 @@ public class AppointmentServiceImp implements AppointmentService {
 
     @Override
     public AppointmentResponseDTO createAppointment(CreateAppointmentDTO payload) {
-        if(!checkExisted(PATIENT_SERVICE_URL+payload.getPatientId(), "Benh nhan"))
+        if(!checkPatientExisted(payload.getPatientId()))
         {
             throw new ResourceNotFoundException("Benh nhan khong ton tai");
         }
 
-        if(!checkExisted(DOCTOR_SERVICE_URL+payload.getDoctorId(), "Bac si"))
+        if(!checkDoctorExisted(payload.getDoctorId()))
         {
             throw new ResourceNotFoundException("Bac si khong ton tai");
         }
@@ -49,22 +50,34 @@ public class AppointmentServiceImp implements AppointmentService {
     }
 
     @CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "getDoctorFallback")
-    private boolean checkExisted(String url, String serviceName)
-    {
-        try{
-            ResponseEntity<Void> response = restTemplate.getForEntity(url, Void.class);
+    public boolean checkDoctorExisted(Long doctorId) {
+        try {
+            ResponseEntity<Void> response = restTemplate.getForEntity(DOCTOR_SERVICE_URL + doctorId, Void.class);
             return response.getStatusCode().equals(HttpStatus.OK);
-        }
-        catch (HttpClientErrorException.NotFound e) {
+        } catch (HttpClientErrorException.NotFound e) {
             return false;
-        }
-        catch (Exception e) {
-            throw new ServiceUnavailableException("He thong "+serviceName+" hien khong ka dung. Vui long thu lai sau.");
+        } catch (Exception e) {
+            throw new ServiceUnavailableException("He thong Bac si hien khong kha dung.");
         }
     }
 
-    private void getDoctorFallback()
-    {
-        throw new ServiceUnavailableException("Hien tai khong the kiem tra thong tin bac si. Vui long thu lai sau.");
+    public boolean getDoctorFallback(Long doctorId, Throwable throwable) {
+        throw new ServiceUnavailableException("Hien tai khong the kiem tra thong tin bac si. Vui long thu lai sau. (Chi tiet: " + throwable.getMessage() + ")");
+    }
+
+    @Retry(name = "patientRetry", fallbackMethod = "getPatientFallback")
+    public boolean checkPatientExisted(Long patientId) {
+        try {
+            ResponseEntity<Void> response = restTemplate.getForEntity(PATIENT_SERVICE_URL + patientId, Void.class);
+            return response.getStatusCode().equals(HttpStatus.OK);
+        } catch (HttpClientErrorException.NotFound e) {
+            return false;
+        } catch (Exception e) {
+            throw new ServiceUnavailableException("He thong Benh nhan hien khong kha dung.");
+        }
+    }
+
+    public boolean getPatientFallback(Long patientId, Throwable throwable) {
+        throw new ServiceUnavailableException("He thong hien tai khong the xac thuc thong tin benh nhan.");
     }
 }

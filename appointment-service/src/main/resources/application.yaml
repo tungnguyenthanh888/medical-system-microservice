@@ -38,3 +38,9 @@ resilience4j:
         maxAttempts = 3
         waitDuration = 200ms
         retryExceptions = org.springframework.web.client.ResourceAccessException
+  rateLimiter:
+    instances:
+      searchDoctorLimit:
+        limitForPeriod = 5
+        limitRefreshPeriod = 10000ms
+        timeoutDuration = 0

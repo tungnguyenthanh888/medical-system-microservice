@@ -26,6 +26,21 @@ public class GlobalException {
                 );
     }
 
+    @ExceptionHandler(TooManyRequestException.class)
+    private ResponseEntity<ApiResponseError> handleTooManyRequest(TooManyRequestException ex)
+    {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .body(
+                        ApiResponseError
+                                .builder()
+                                .status(HttpStatus.TOO_MANY_REQUESTS)
+                                .error("Too many request.")
+                                .timestamp(LocalDateTime.now())
+                                .message(ex.getMessage())
+                                .build()
+                );
+    }
+
     @ExceptionHandler(ServiceUnavailableException.class)
     private ResponseEntity<ApiResponseError> handleServiceUnavailable(ServiceUnavailableException ex)
     {

@@ -9,6 +9,7 @@ import com.medical.appointmentservice.mapper.AppointmentMapper;
 import com.medical.appointmentservice.repository.AppointmentRepository;
 import com.medical.appointmentservice.service.AppointmentService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,7 @@ public class AppointmentServiceImp implements AppointmentService {
     }
 
     @CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "getDoctorFallback")
+    @RateLimiter(name="doctorSearchLimit")
     public boolean checkDoctorExisted(Long doctorId) {
         try {
             ResponseEntity<Void> response = restTemplate.getForEntity(DOCTOR_SERVICE_URL + doctorId, Void.class);

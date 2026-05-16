@@ -48,7 +48,7 @@ public class AppointmentServiceImp implements AppointmentService {
         return mapper.toResponse(repository.save(appointment));
     }
 
-    @CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "fallbackCheckDoctor")
+    @CircuitBreaker(name = "doctorServiceCB", fallbackMethod = "getDoctorFallback")
     private boolean checkExisted(String url, String serviceName)
     {
         try{
@@ -63,8 +63,8 @@ public class AppointmentServiceImp implements AppointmentService {
         }
     }
 
-    private boolean fallbackCheckDoctor()
+    private void getDoctorFallback()
     {
-        return false;
+        throw new ServiceUnavailableException("Hien tai khong the kiem tra thong tin bac si. Vui long thu lai sau.");
     }
 }
